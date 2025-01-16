@@ -1,8 +1,6 @@
-// Copyright © 2017-2020 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 import WalletCore
 import XCTest
@@ -17,6 +15,29 @@ class AlgorandTests: XCTestCase {
 
         XCTAssertEqual(pubkey.data.hexString, "00d1857babdde3d70dad15110a9093e77abef991524f10dfa6a727946bfdd411")
         XCTAssertEqual(address.description, addressFromString.description)
+    }
+    
+    func testSignNFTTransfer() {
+        // Successfully broadcasted: https://algoexplorer.io/tx/FFLUH4QKZHG744RIQ2AZNWZUSIIH262KZ4MEWSY4RXMWN5NMOOJA
+        let round: UInt64 = 27963950
+        let transaction = AlgorandAssetTransfer.with {
+            $0.toAddress = "362T7CSXNLIOBX6J3H2SCPS4LPYFNV6DDWE6G64ZEUJ6SY5OJIR6SB5CVE"
+            $0.amount = 1
+            $0.assetID = 989643841
+        }
+        let input = AlgorandSigningInput.with {
+            $0.genesisID = "mainnet-v1.0"
+            $0.genesisHash = Data(base64Encoded: "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=")!
+            $0.note = "TWT TO THE MOON".data(using: .utf8)!
+            $0.privateKey = Data(hexString: "dc6051ffc7b3ec601bde432f6dea34d40fe3855e4181afa0f0524c42194a6da7")!
+            $0.firstRound = round
+            $0.lastRound = round + 1000
+            $0.fee = 1000
+            $0.assetTransfer = transaction
+        }
+        let output: AlgorandSigningOutput = AnySigner.sign(input: input, coin: .algorand)
+
+        XCTAssertEqual(output.signature, "nXQsDH1ilG3DIo2VQm5tdYKXe9o599ygdqikmROpZiNXAvQeK3avJqgjM5o+iByCdq6uOxlbveDyVmL9nZxxBg==")
     }
 
     func testSign() {

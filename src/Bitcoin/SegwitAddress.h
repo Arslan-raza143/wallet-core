@@ -1,13 +1,11 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #pragma once
 
 #include "../PublicKey.h"
-#include "../Data.h"
+#include "Data.h"
 
 #include <cstdint>
 #include <string>
@@ -31,6 +29,9 @@ class SegwitAddress {
     /// Witness program.
     Data witnessProgram;
 
+    // Prefix for Bitcoin Testnet Segwit addresses
+    static constexpr auto TestnetPrefix = "tb";
+
     /// Determines whether a string makes a valid Bech32 address.
     static bool isValid(const std::string& string);
 
@@ -46,6 +47,9 @@ class SegwitAddress {
     /// Initializes a segwit-version-0 Bech32 address with a public key and a HRP prefix.
     /// Taproot (v>=1) is not supported by this method.
     SegwitAddress(const PublicKey& publicKey, std::string hrp);
+
+    /// Create a testnet address
+    static SegwitAddress createTestnetFromPublicKey(const PublicKey& publicKey) { return SegwitAddress(publicKey, TestnetPrefix); }
 
     /// Decodes a SegWit address.
     ///

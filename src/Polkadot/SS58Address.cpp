@@ -1,8 +1,6 @@
-// Copyright © 2017-2022 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #include "SS58Address.h"
 
@@ -10,7 +8,7 @@ using namespace TW;
 using namespace std;
 
 bool SS58Address::isValid(const std::string& string, uint32_t network) {
-    const auto decoded = Base58::bitcoin.decode(string);
+    const auto decoded = Base58::decode(string);
     byte decodedNetworkSize = 0;
     uint32_t decodedNetwork = 0;
     if (!decodeNetwork(decoded, decodedNetworkSize, decodedNetwork)) {
@@ -34,7 +32,7 @@ bool SS58Address::isValid(const std::string& string, uint32_t network) {
 
 template <typename T>
 Data SS58Address::computeChecksum(const T& data) {
-    auto prefix = Data(SS58Prefix.begin(), SS58Prefix.end());
+    auto prefix = Data(gSS58Prefix.begin(), gSS58Prefix.end());
     append(prefix, Data(data.begin(), data.end()));
     auto hash = Hash::blake2b(prefix, 64);
     auto checksum = Data(checksumSize);
@@ -47,7 +45,7 @@ SS58Address::SS58Address(const std::string& string, uint32_t network) {
     if (!isValid(string, network)) {
         throw std::invalid_argument("Invalid address string");
     }
-    const auto decoded = Base58::bitcoin.decode(string);
+    const auto decoded = Base58::decode(string);
     bytes.resize(decoded.size() - checksumSize);
     std::copy(decoded.begin(), decoded.end() - checksumSize, bytes.begin());
 }
@@ -68,7 +66,7 @@ std::string SS58Address::string() const {
     auto result = Data(bytes.begin(), bytes.end());
     auto checksum = computeChecksum(bytes);
     append(result, checksum);
-    return Base58::bitcoin.encode(result);
+    return Base58::encode(result);
 }
 
 /// Returns public key bytes

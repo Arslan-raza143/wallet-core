@@ -1,15 +1,11 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #include "Transfer.h"
 #include "BinaryCoding.h"
-#include "../HexCoding.h"
 
-using namespace TW;
-using namespace TW::Algorand;
+namespace TW::Algorand {
 
 Data Transfer::serialize() const {
     /* Algorand transaction is encoded with msgpack
@@ -76,3 +72,5 @@ Data Transfer::serialize() const {
     encodeString(type, data);
     return data;
 }
+
+} // namespace TW::Algorand

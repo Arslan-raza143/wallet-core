@@ -1,8 +1,6 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 import XCTest
 import WalletCore
 
@@ -94,7 +92,7 @@ class BluzelleSignerTests: XCTestCase {
             $0.fromAddress = myAddress
             $0.toAddress = "bluzelle1xccvees6ev4wm2r49rc6ptulsdxa8x8jfpmund"
             $0.amounts = [CosmosAmount.with {
-                $0.amount = 1
+                $0.amount = "1"
                 $0.denom = "ubnt"
             }]
         }
@@ -106,7 +104,7 @@ class BluzelleSignerTests: XCTestCase {
         let fee = CosmosFee.with {
             $0.gas = 500000
             $0.amounts = [CosmosAmount.with {
-                $0.amount = 1000
+                $0.amount = "1000"
                 $0.denom = "ubnt"
             }]
         }

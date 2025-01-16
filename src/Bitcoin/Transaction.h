@@ -1,8 +1,6 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #pragma once
 
@@ -14,11 +12,12 @@
 #include "UTXO.h"
 #include "../PrivateKey.h"
 #include "../Hash.h"
-#include "../Data.h"
+#include "Data.h"
 #include "SignatureVersion.h"
 #include "../proto/Bitcoin.pb.h"
 
 #include <vector>
+#include <optional>
 
 namespace TW::Bitcoin {
 
@@ -33,7 +32,7 @@ class TransactionOutputs: public std::vector<TransactionOutput> {};
 struct Transaction {
 public:
     /// Transaction data format version (note, this is signed)
-    int32_t version = 1;
+    int32_t _version = 1;
 
     /// The block number or timestamp at which this transaction is unlocked
     ///
@@ -53,7 +52,7 @@ public:
     // List of transaction outputs
     TransactionOutputs<TransactionOutput> outputs;
 
-    TW::Hash::Hasher hasher = TW::Hash::sha256d;
+    TW::Hash::Hasher hasher = TW::Hash::HasherSha256d;
 
     /// Used for diagnostics; store previously estimated virtual size (if any; size in bytes)
     int previousEstimatedVirtualSize = 0;
@@ -61,8 +60,8 @@ public:
 public:
     Transaction() = default;
 
-    Transaction(int32_t version, uint32_t lockTime = 0, TW::Hash::Hasher hasher = TW::Hash::sha256d)
-        : version(version), lockTime(lockTime), inputs(), outputs(), hasher(hasher) {}
+    Transaction(int32_t version, uint32_t lockTime = 0, TW::Hash::Hasher hasher = TW::Hash::HasherSha256d)
+        : _version(version), lockTime(lockTime), inputs(), outputs(), hasher(hasher) {}
 
     /// Whether the transaction is empty.
     bool empty() const { return inputs.empty() && outputs.empty(); }

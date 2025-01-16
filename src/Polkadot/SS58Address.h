@@ -1,8 +1,6 @@
-// Copyright © 2017-2022 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #pragma once
 
@@ -12,7 +10,7 @@
 
 #include <string>
 
-const std::string SS58Prefix = "SS58PRE";
+inline const std::string gSS58Prefix{"SS58PRE"};
 
 namespace TW {
 
