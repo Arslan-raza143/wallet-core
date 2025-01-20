@@ -1,12 +1,11 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #pragma once
 
 #include "Amount.h"
+#include "DustCalculator.h"
 #include "Transaction.h"
 #include "UTXO.h"
 #include <TrustWalletCore/TWBitcoinSigHashType.h>
@@ -33,6 +32,9 @@ public:
     // Transaction fee per byte
     Amount byteFee = 0;
 
+    // Whether to calculate the fee according to ZIP-0317 for the given transaction
+    bool zip0317 = false;
+
     // Recipient's address
     std::string toAddress;
 
@@ -51,6 +53,12 @@ public:
     // If sending max amount
     bool useMaxAmount = false;
 
+    // If all input utxos
+    bool useMaxUtxo = false;
+
+    // If disable dust filter
+    bool disableDustFilter = false;
+
     // Coin type (forks)
     TWCoinType coinType = TWCoinTypeBitcoin;
 
@@ -59,10 +67,24 @@ public:
 
     Data outputOpReturn;
 
+    // Optional index of the OP_RETURN output in the transaction.
+    // If not set, OP_RETURN output will be pushed as the latest output.
+    MaybeIndex outputOpReturnIndex;
+
     uint32_t lockTime = 0;
+    uint32_t time = 0;
+
+    // Besides to_address and change_address,
+    // we have other outputs that include address and value
+    std::vector<std::pair<std::string, int64_t>> extraOutputs;
+
+    // Total amount of the `extraOutputs`.
+    Amount extraOutputsAmount = 0;
+
+    DustCalculatorShared dustCalculator;
 
 public:
-    SigningInput() = default;
+    SigningInput();
 
     SigningInput(const Proto::SigningInput& input);
 };

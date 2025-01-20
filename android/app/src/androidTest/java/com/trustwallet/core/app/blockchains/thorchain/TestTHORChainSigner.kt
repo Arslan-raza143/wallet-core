@@ -1,8 +1,6 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 package com.trustwallet.core.app.blockchains.thorchain
 
@@ -36,7 +34,7 @@ class TestTHORChainSigner {
         val to = AnyAddress("thor1e2ryt8asq4gu0h6z2sx9u7rfrykgxwkmr9upxn", THORCHAIN).data()
 
         val txAmount = Cosmos.Amount.newBuilder().apply {
-            amount = 38000000
+            amount = "38000000"
             denom = "rune"
         }.build()
 
@@ -51,7 +49,7 @@ class TestTHORChainSigner {
         }.build()
 
         val feeAmount = Cosmos.Amount.newBuilder().apply {
-            amount = 200
+            amount = "200"
             denom = "rune"
         }.build()
 
@@ -74,7 +72,7 @@ class TestTHORChainSigner {
         val output = AnySigner.sign(signingInput, THORCHAIN, SigningOutput.parser())
 
         assertEquals(output.serialized, "{\"mode\":\"BROADCAST_MODE_BLOCK\",\"tx_bytes\":\"ClIKUAoOL3R5cGVzLk1zZ1NlbmQSPgoUFSLnZ9tusZcIsAOAKb+9YHvJvQ4SFMqGRZ+wBVHH30JUDF54aRksgzrbGhAKBHJ1bmUSCDM4MDAwMDAwEmYKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQPtmX45bPQpL1/OWkK7pBWZzNXZbjExVKfJ6nBJ3jF8dxIECgIIARgVEhIKCwoEcnVuZRIDMjAwEKDLmAEaQKZtS3ATa26OOGvqdKm14ZbHeNfkPtIajXi5MkZ5XaX2SWOeX+YnCPZ9TxF9Jj5cVIo71m55xq4hVL3yDbRe89g=\"}")
-        assertEquals(output.error, "")
+        assertEquals(output.errorMessage, "")
         assertEquals(output.json, "")
     }
 }

@@ -1,8 +1,6 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 import XCTest
 import WalletCore
@@ -32,7 +30,7 @@ class THORChainSignerTests: XCTestCase {
             $0.fromAddress = fromAddress.description
             $0.toAddress = "thor1e2ryt8asq4gu0h6z2sx9u7rfrykgxwkmr9upxn"
             $0.amounts = [CosmosAmount.with {
-                $0.amount = 10000000
+                $0.amount = "10000000"
                 $0.denom = "rune"
             }]
         }
@@ -44,7 +42,7 @@ class THORChainSignerTests: XCTestCase {
         let fee = CosmosFee.with {
             $0.gas = 200000
             $0.amounts = [CosmosAmount.with {
-                $0.amount = 2000000
+                $0.amount = "2000000"
                 $0.denom = "rune"
             }]
         }
@@ -114,7 +112,7 @@ class THORChainSignerTests: XCTestCase {
             $0.fromAddress = fromAddress.data
             $0.toAddress = AnyAddress(string: "thor1e2ryt8asq4gu0h6z2sx9u7rfrykgxwkmr9upxn", coin: .thorchain)!.data
             $0.amounts = [CosmosAmount.with {
-                $0.amount = 38000000
+                $0.amount = "38000000"
                 $0.denom = "rune"
             }]
         }
@@ -126,7 +124,7 @@ class THORChainSignerTests: XCTestCase {
         let fee = CosmosFee.with {
             $0.gas = 2500000
             $0.amounts = [CosmosAmount.with {
-                $0.amount = 200
+                $0.amount = "200"
                 $0.denom = "rune"
             }]
         }

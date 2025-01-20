@@ -1,8 +1,6 @@
-// Copyright © 2017-2020 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #include "CommandExecutor.h"
 #include "WalletConsole.h"
@@ -189,7 +187,7 @@ string CommandExecutor::parseLine(const string& line, vector<string>& params) {
     return cmd;
 }
 
-bool CommandExecutor::checkMinParams(const vector<string>& params, int n) const {
+bool CommandExecutor::checkMinParams(const vector<string>& params, std::size_t n) const {
     if (params.size() - 1 >= n) {
         return true;
     }

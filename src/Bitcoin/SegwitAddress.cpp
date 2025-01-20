@@ -1,17 +1,14 @@
 // Copyright © 2017 Pieter Wuille
-// Copyright © 2017-2020 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #include "SegwitAddress.h"
 #include "../Bech32.h"
 
 #include <TrezorCrypto/ecdsa.h>
-#include <TrustWalletCore/TWHRP.h>
 
-using namespace TW::Bitcoin;
+namespace TW::Bitcoin {
 
 bool SegwitAddress::isValid(const std::string& string) {
     return std::get<2>(decode(string));
@@ -103,3 +100,5 @@ std::pair<SegwitAddress, bool> SegwitAddress::fromRaw(const std::string& hrp, co
 
     return std::make_pair(SegwitAddress(hrp, data[0], conv), true);
 }
+
+} // namespace TW::Bitcoin

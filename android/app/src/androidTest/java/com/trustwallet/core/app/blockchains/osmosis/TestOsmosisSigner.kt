@@ -1,8 +1,6 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 package com.trustwallet.core.app.blockchains.osmosis
 
@@ -35,7 +33,7 @@ class TestOsmosisSigner {
         val from = AnyAddress(publicKey, OSMOSIS).description()
 
         val txAmount = Cosmos.Amount.newBuilder().apply {
-            amount = 100000 - 200
+            amount = "99800"
             denom = "uosmo"
         }.build()
 
@@ -50,7 +48,7 @@ class TestOsmosisSigner {
         }.build()
 
         val feeAmount = Cosmos.Amount.newBuilder().apply {
-            amount = 200
+            amount = "200"
             denom = "uosmo"
         }.build()
 
@@ -73,6 +71,6 @@ class TestOsmosisSigner {
         val output = AnySigner.sign(signingInput, OSMOSIS, SigningOutput.parser())
 
         assertEquals(output.serialized, "{\"mode\":\"BROADCAST_MODE_BLOCK\",\"tx_bytes\":\"Co0BCooBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmoKK29zbW8xbWt5Njljbjhla3R3eTA4NDV2ZWM5dXBzZHBoa3R4dDBlbjk3ZjUSK29zbW8xOHMwaGRuc2xsZ2NjbHdldTlheW13NG5na3RyMmswcmt2bjdqbW4aDgoFdW9zbW8SBTk5ODAwEmQKTgpGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQLs71zkN6MCxn+VRo3ksx826RH0Z9fmpStBweE+HVY2SRIECgIIARISCgwKBXVvc21vEgMyMDAQwJoMGkAMY//Md5GRUR4lVZhk558hFS3kii9QZYoYKfg4+ac/xgNeyoiEweVDhcmEvlH1orVwjLUOnYs4ly2a/yIurYVj\"}")
-        assertEquals(output.error, "")
+        assertEquals(output.errorMessage, "")
     }
 }

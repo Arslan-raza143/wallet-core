@@ -1,8 +1,6 @@
-// Copyright © 2017-2020 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #pragma once
 
@@ -19,11 +17,12 @@ namespace TW::Zcash {
 
 extern const std::array<byte, 4> SaplingBranchID;
 extern const std::array<byte, 4> BlossomBranchID;
+extern const std::array<byte, 4> Nu6BranchID;
 
 /// Only supports transparent transaction right now
 /// See also https://github.com/zcash/zips/blob/master/zip-0243.rst
 struct Transaction {
-    uint32_t version = 0x80000004;
+    uint32_t _version = 0x80000004;
     uint32_t versionGroupId = 0x892F2085;
     uint32_t lockTime = 0;
     uint32_t expiryHeight = 0;
@@ -40,7 +39,7 @@ struct Transaction {
 
     Transaction(uint32_t version, uint32_t versionGroupId, uint32_t lockTime, uint32_t expiryHeight,
                 uint64_t valueBalance, std::array<byte, 4> branchId)
-        : version(version)
+        : _version(version)
         , versionGroupId(versionGroupId)
         , lockTime(lockTime)
         , expiryHeight(expiryHeight)
