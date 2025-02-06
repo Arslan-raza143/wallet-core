@@ -183,6 +183,20 @@ class KeyStoreTests: XCTestCase {
         XCTAssertNotNil(storedData)
         XCTAssertNotNil(PrivateKey(data: storedData!))
     }
+    
+    func testImportPrivateKeyAES256() throws {
+        let keyStore = try KeyStore(keyDirectory: keyDirectory)
+        let privateKeyData = Data(hexString: "9cdb5cab19aec3bd0fcd614c5f185e7a1d97634d4225730eba22497dc89a716c")!
+        let key = StoredKey.importPrivateKeyWithEncryption(privateKey: privateKeyData, name: "name", password: Data("password".utf8), coin: .ethereum, encryption: StoredKeyEncryption.aes256Ctr)!
+        let json = key.exportJSON()!
+
+        let wallet = try keyStore.import(json: json, name: "name", password: "password", newPassword: "newPassword", coins: [.ethereum])
+        let storedData = wallet.key.decryptPrivateKey(password: Data("newPassword".utf8))
+
+        XCTAssertNotNil(keyStore.keyWallet)
+        XCTAssertNotNil(storedData)
+        XCTAssertNotNil(PrivateKey(data: storedData!))
+    }
 
     func testImportPrivateKey() throws {
         let keyStore = try KeyStore(keyDirectory: keyDirectory)
@@ -208,9 +222,18 @@ class KeyStoreTests: XCTestCase {
         XCTAssertEqual(wallet.accounts.count, 1)
         XCTAssertNotNil(keyStore.hdWallet)
     }
+    
+    func testImportWalletAES256() throws {
+        let keyStore = try KeyStore(keyDirectory: keyDirectory)
+        let wallet = try keyStore.import(mnemonic: mnemonic, name: "name", encryptPassword: "newPassword", coins: [.ethereum], encryption: .aes256Ctr)
+        let storedData = wallet.key.decryptMnemonic(password: Data("newPassword".utf8))
+
+        XCTAssertNotNil(storedData)
+        XCTAssertEqual(wallet.accounts.count, 1)
+        XCTAssertNotNil(keyStore.hdWallet)
+    }
 
     func testImportJSON() throws {
-
         let expected = """
         {
             "activeAccounts": [{
@@ -397,6 +420,35 @@ class KeyStoreTests: XCTestCase {
                 return
             }
         }
+    }
+
+    func testCreateMultiAccount() throws {
+        let mnemonic = "team engine square letter hero song dizzy scrub tornado fabric divert saddle"
+        let password = "password"
+        let keyStore = try KeyStore(keyDirectory: keyDirectory)
+        let wallet = try keyStore.import(mnemonic: mnemonic, name: "name", encryptPassword: password, coins: [.bitcoin, .solana])
+
+        _ = try keyStore.addAccounts(wallet: wallet, coins: [.bitcoin, .solana], password: password)
+
+        let btc1 = try wallet.getAccount(password: password, coin: .bitcoin, derivation: .default)
+        XCTAssertEqual(btc1.address, "bc1qturc268v0f2srjh4r2zu4t6zk4gdutqd5a6zny")
+        XCTAssertEqual(btc1.extendedPublicKey, "zpub6qbsWdbcKW9sC6shTKK4VEhfWvDCoWpfLnnVfYKHLHt31wKYUwH3aFDz4WLjZvjHZ5W4qVEyk37cRwzTbfrrT1Gnu8SgXawASnkdQ994atn")
+
+        let btc2 = try wallet.getAccount(password: password, coin: .bitcoin, derivation: .bitcoinLegacy)
+        XCTAssertEqual(btc2.address, "1NyRyFewhZcWMa9XCj3bBxSXPXyoSg8dKz")
+        XCTAssertEqual(btc2.extendedPublicKey, "xpub6CR52eaUuVb4kXAVyHC2i5ZuqJ37oWNPZFtjXaazFPXZD45DwWBYEBLdrF7fmCR9pgBuCA9Q57zZfyJjDUBDNtWkhWuGHNYKLgDHpqrHsxV")
+        
+        let btc3 = try wallet.getAccount(password: password, coin: .bitcoin, derivation: .bitcoinTaproot)
+        XCTAssertEqual(btc3.address, "bc1pyqkqf20fmmwmcxf98tv6k63e2sgnjy4zne6d0r32vxwm3au0hnksq6ec57")
+        XCTAssertEqual(btc3.extendedPublicKey, "zpub6qNRYbLLXquaD1GKxHZWDs3moUFQfP4iqXiDPCd8aD3oNHZkCAusAw5raKQEWV8BkXBTXhWBkgZTxzjjnQ5cRjWa6LNcjmrVVNdUKvbKTgm")
+
+        let solana1 = try wallet.getAccount(password: password, coin: .solana, derivation: .default)
+        XCTAssertEqual(solana1.address, "HiipoCKL8hX2RVmJTz3vaLy34hS2zLhWWMkUWtw85TmZ")
+        XCTAssertEqual(solana1.derivationPath, "m/44'/501'/0'")
+
+        let solana2 = try wallet.getAccount(password: password, coin: .solana, derivation: .solanaSolana)
+        XCTAssertEqual(solana2.address, "CgWJeEWkiYqosy1ba7a3wn9HAQuHyK48xs3LM4SSDc1C")
+        XCTAssertEqual(solana2.derivationPath, "m/44'/501'/0'/0'")
     }
 
     func createTempDirURL() throws -> URL {

@@ -1,14 +1,11 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #include "OptInAssetTransaction.h"
 #include "BinaryCoding.h"
 
-using namespace TW;
-using namespace TW::Algorand;
+namespace TW::Algorand {
 
 Data OptInAssetTransaction::serialize() const {
     Data data;
@@ -56,3 +53,5 @@ Data OptInAssetTransaction::serialize() const {
 
     return data;
 }
+
+} // namespace TW::Algorand

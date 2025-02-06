@@ -1,5 +1,9 @@
-set(protobuf_SOURCE_DIR ${CMAKE_SOURCE_DIR}/build/local/src/protobuf/protobuf-3.19.2)
-set(protobuf_source_dir ${CMAKE_SOURCE_DIR}/build/local/src/protobuf/protobuf-3.19.2)
+# SPDX-License-Identifier: Apache-2.0
+#
+# Copyright © 2017 Trust Wallet.
+
+set(protobuf_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../build/local/src/protobuf/protobuf-3.19.2)
+set(protobuf_source_dir ${CMAKE_CURRENT_LIST_DIR}/../build/local/src/protobuf/protobuf-3.19.2)
 
 # sort + uniq -u
 # https://github.com/protocolbuffers/protobuf/blob/master/cmake/libprotobuf.cmake
@@ -196,7 +200,7 @@ add_library(protobuf ${protobuf_SOURCE_FILES} ${protobuf_HEADER_FILES})
 set_target_properties(
     protobuf
     PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     IMPORTED_CONFIGURATIONS Release
     INCLUDE_DIRECTORIES ${protobuf_source_dir}/src
@@ -204,10 +208,10 @@ set_target_properties(
     LINK_FLAGS -no-undefined
 )
 
-target_compile_options(protobuf PRIVATE -DHAVE_PTHREAD=1 -Wno-inconsistent-missing-override -Wno-shorten-64-to-32)
+target_compile_options(protobuf PRIVATE -DHAVE_PTHREAD=1 -Wno-inconsistent-missing-override -Wno-shorten-64-to-32 -Wno-invalid-noreturn)
 
 install(TARGETS protobuf
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/protobuf
-        )
+)

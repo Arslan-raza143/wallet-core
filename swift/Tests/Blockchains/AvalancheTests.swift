@@ -1,8 +1,6 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 import WalletCore
 import XCTest
@@ -17,5 +15,21 @@ class AvalancheTests: XCTestCase {
 
         XCTAssertEqual(address.description, addressETH.description)
         XCTAssertEqual(address.data.hexString, addressETH.data.hexString)
+    }
+
+    func testXPub() {
+        let wallet = HDWallet(mnemonic: "liquid spider narrow follow black west cabbage intact stadium resource gentle raccoon", passphrase: "")!
+
+        let xpub1 = wallet.getExtendedPublicKey(purpose: .bip44, coin: .ethereum, version: .xpub)
+        let xpub2 = wallet.getExtendedPublicKey(purpose: .bip44, coin: .avalancheCChain, version: .xpub)
+
+        XCTAssertEqual(xpub1, xpub2)
+        XCTAssertEqual(xpub2, "xpub6Bmo35QfCNvffj8tZsTVRvFxA5ULv2aHDV8dDCa7q6SzkMLJffxWRNE5vSJ4hANoKpmSp3p7Nbcp1vEz5F785HV4Aq2A6jWwHoyWp3EFgYp")
+
+        let xpri1 = wallet.getExtendedPrivateKey(purpose: .bip44, coin: .ethereum, version: .xprv)
+        let xpri2 = wallet.getExtendedPrivateKey(purpose: .bip44, coin: .smartChain, version: .xprv)
+
+        XCTAssertEqual(xpri1, xpri2)
+        XCTAssertEqual(xpri2, "xprv9xnSdZsmN1NNTF4RTqvV4nKDc3drWZrRrGD2QpAWGkv1sZ1A88eFsZuc59vKRr4mxJELH7C18ymaHENodYzEbeLq1JmPUAy3CmpA2inVCwo")
     }
 }

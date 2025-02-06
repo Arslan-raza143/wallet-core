@@ -6,6 +6,7 @@ option java_package = "wallet.core.jni.proto";
 import "Bitcoin.proto";
 import "Ethereum.proto";
 import "Binance.proto";
+import "Cosmos.proto";
 
 // Supported blockchains
 enum Chain {
@@ -13,11 +14,18 @@ enum Chain {
     BTC = 1;
     ETH = 2;
     BNB = 3;
+    DOGE = 4;
+    BCH = 5;
+    LTC = 6;
+    ATOM = 7;
+    AVAX = 8;
+    BSC = 9;
 }
 
 // Predefined error codes
 enum ErrorCode {
-    OK = 0; // OK
+    // OK
+    OK = 0;
     Error_general = 1;
     Error_Input_proto_deserialization = 2;
     Error_Unsupported_from_chain = 13;
@@ -30,21 +38,39 @@ enum ErrorCode {
 
 // An error code + a free text
 message Error {
+    // code of the error
     ErrorCode code = 1;
+
+    // optional error message
     string message = 2;
 }
 
 // Represents an asset.  Examples: BNB.BNB, RUNE.RUNE, BNB.RUNE-67C
 message Asset {
+    // Chain ID
     Chain chain = 1;
+
+    // Symbol
     string symbol = 2;
+
+    // The ID of the token (blockchain-specific format)
     string token_id = 3;
+}
+
+message StreamParams {
+    // Optional Swap Interval ncy in blocks.
+    // The default is 1 - time-optimised means getting the trade done quickly, regardless of the cost.
+    string interval = 1;
+
+    // Optional Swap Quantity. Swap interval times every Interval blocks.
+    // The default is 0 - network will determine the number of swaps.
+    string quantity = 2;
 }
 
 // Input for a swap between source and destination chains; for creating a TX on the source chain.
 message SwapInput {
     // Source chain
-    Chain from_chain = 1;
+    Asset from_asset = 1;
 
     // Source address, on source chain
     string from_address = 2;
@@ -64,15 +90,36 @@ message SwapInput {
     // The source amount, integer as string, in the smallest native unit of the chain
     string from_amount = 7;
 
-    // The minimum accepted destination amount.  Actual destination amount will depend on current rates, limit amount can be used to prevent using very unfavorable rates.
+    // Optional minimum accepted destination amount.  Actual destination amount will depend on current rates, limit amount can be used to prevent using very unfavorable rates.
+    // The default is 0 - no price limit.
     string to_amount_limit = 8;
+
+    // Optional affiliate fee destination address.  A Rune address.
+    string affiliate_fee_address = 9;
+
+    // Optional affiliate fee, percentage base points, e.g. 100 means 1%, 0 - 1000, as string. Empty means to ignore it.
+    string affiliate_fee_rate_bp = 10;
+
+    // Optional extra custom memo, reserved for later use.
+    string extra_memo = 11;
+
+    // Optional expirationTime, will be now() + 15 min if not set
+    uint64 expiration_time = 12;
+
+    // Optional streaming parameters. Use Streaming Swaps and Swap Optimisation strategy if set.
+    // https://docs.thorchain.org/thorchain-finance/continuous-liquidity-pools#streaming-swaps-and-swap-optimisation
+    StreamParams stream_params = 13;
 }
 
+// Result of the swap, a SigningInput struct for the specific chain
 message SwapOutput {
+    // Source chain
     Chain from_chain = 1;
+
+    // Destination chain
     Chain to_chain = 2;
 
-    // Error code, filled in case of error, OK&"" on success
+    // Error code, filled in case of error, OK/empty on success
     Error error = 3;
 
     // Prepared unsigned transaction input, on the source chain, to THOR.  Some fields must be completed, and it has to be signed.
@@ -80,5 +127,6 @@ message SwapOutput {
         Bitcoin.Proto.SigningInput bitcoin = 4;
         Ethereum.Proto.SigningInput ethereum = 5;
         Binance.Proto.SigningInput binance = 6;
+        Cosmos.Proto.SigningInput cosmos = 7;
     }
 }

@@ -1,8 +1,6 @@
-// Copyright © 2017-2020 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #include "Signer.h"
 #include "Address.h"
@@ -18,8 +16,8 @@
 #include <google/protobuf/util/json_util.h>
 #include <nlohmann/json.hpp>
 
-using namespace TW;
-using namespace TW::Zilliqa;
+namespace TW::Zilliqa {
+
 using ByteArray = ZilliqaMessage::ByteArray;
 
 static inline Data prependZero(Data& data) {
@@ -95,7 +93,7 @@ Proto::SigningOutput Signer::sign(const Proto::SigningInput& input) noexcept {
     const auto preImage = Signer::getPreImage(input, address);
     const auto key = PrivateKey(Data(input.private_key().begin(), input.private_key().end()));
     const auto pubKey = key.getPublicKey(TWPublicKeyTypeSECP256k1);
-    const auto signature = key.signSchnorr(preImage, TWCurveSECP256k1);
+    const auto signature = key.signZilliqa(preImage);
     const auto transaction = input.transaction();
 
     // build json
@@ -137,3 +135,5 @@ std::string Signer::signJSON(const std::string& json, const Data& key) {
     input.set_private_key(key.data(), key.size());
     return hex(Signer::sign(input).json());
 }
+
+} // namespace TW::Zilliqa

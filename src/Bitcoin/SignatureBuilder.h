@@ -1,8 +1,6 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #pragma once
 
@@ -17,6 +15,7 @@
 #include "../PublicKey.h"
 #include "../CoinEntry.h"
 
+#include <utility>
 #include <vector>
 #include <optional>
 #include <utility>
@@ -42,7 +41,7 @@ private:
     TransactionPlan plan;
 
     /// Transaction being signed.
-    Transaction transaction;
+    Transaction _transaction;
 
     /// Transaction being signed, with list of signed inputs
     Transaction transactionToSign;
@@ -59,13 +58,13 @@ public:
     /// Initializes a transaction signer with signing input.
     /// estimationMode: is set, no real signing is performed, only as much as needed to get the almost-exact signed size 
     SignatureBuilder(
-        const SigningInput& input,
-        const TransactionPlan& plan,
+        SigningInput input,
+        TransactionPlan plan,
         Transaction& transaction,
         SigningMode signingMode = SigningMode_Normal,
         std::optional<SignaturePubkeyList> externalSignatures = {}
     )
-      : input(input), plan(plan), transaction(transaction), signingMode(signingMode), externalSignatures(externalSignatures) {}
+      : input(std::move(input)), plan(std::move(plan)), _transaction(transaction), signingMode(signingMode), externalSignatures(std::move(externalSignatures)) {}
 
     /// Signs the transaction.
     ///

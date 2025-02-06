@@ -1,8 +1,6 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #pragma once
 
@@ -12,7 +10,8 @@
 namespace TW::Algorand {
 
 class BaseTransaction {
-  public:
+public:
+    virtual ~BaseTransaction() noexcept = default;
     virtual Data serialize() const = 0;
     virtual Data serialize(const Data& signature) const {
         /* Algorand transaction and signature are encoded with msgpack:

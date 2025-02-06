@@ -6,7 +6,7 @@ settings:
   base:
     HEADER_SEARCH_PATHS: $(SRCROOT)/wallet-core ${SRCROOT}/trezor-crypto/crypto
     SYSTEM_HEADER_SEARCH_PATHS: ${SRCROOT}/include ${SRCROOT}/../build/local/include ${SRCROOT}/trezor-crypto/include $(SRCROOT)/protobuf /usr/local/include /opt/homebrew/include
-    CLANG_CXX_LANGUAGE_STANDARD: c++17
+    CLANG_CXX_LANGUAGE_STANDARD: c++20
     SWIFT_VERSION: 5.1
     IPHONEOS_DEPLOYMENT_TARGET: 13.0
   configs:
@@ -27,9 +27,10 @@ targets:
         excludes:
           - ".vscode"
           - "proto/*.proto"
-          - "Cosmos/Protobuf/*.proto"
           - "Tron/Protobuf/*.proto"
           - "Zilliqa/Protobuf/*.proto"
+          - "Cosmos/Protobuf/*.proto"
+          - "Hedera/Protobuf/*.proto"
       - Sources
     dependencies:
       - target: trezor-crypto
@@ -37,6 +38,7 @@ targets:
       - target: protobuf
         link: true
       - sdk: libc++.tbd
+      - framework: WalletCoreRs.xcframework
     scheme:
       testTargets:
         - WalletCoreTests
@@ -44,6 +46,7 @@ targets:
     settings:
       SKIP_INSTALL: false
       SUPPORTS_MACCATALYST: true
+      DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
       BUILD_LIBRARY_FOR_DISTRIBUTION: true
       INFOPLIST_FILE: 'Info.plist'
       CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION: YES_ERROR
@@ -59,6 +62,7 @@ targets:
           fi
         name: SwiftLint
         shell: /bin/bash
+        basedOnDependencyAnalysis: false
 
   WalletCoreTests:
     type: bundle.unit-test
@@ -125,7 +129,8 @@ targets:
       - trezor-crypto/crypto/groestl.c
       - trezor-crypto/crypto/hmac_drbg.c
       - trezor-crypto/crypto/rfc6979.c
-      - trezor-crypto/crypto/schnorr.c
+      - trezor-crypto/crypto/zilliqa.c
+      - trezor-crypto/crypto/cardano.c
       - trezor-crypto/crypto/shamir.c
       - trezor-crypto/crypto/sodium/private/fe_25_5/fe.c
       - trezor-crypto/crypto/sodium/private/ed25519_ref10.c

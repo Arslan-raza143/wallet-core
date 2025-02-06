@@ -1,14 +1,12 @@
-// Copyright © 2017-2020 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 import XCTest
 import WalletCore
 
 class EthereumTests: XCTestCase {
-
+    
     func testAddress() {
         let anyAddress = AnyAddress(string: "0x7d8bf18c7ce84b3e175b339c4ca93aed1dd166f1", coin: .ethereum)
 
@@ -21,7 +19,7 @@ class EthereumTests: XCTestCase {
         XCTAssertFalse(AnyAddress.isValid(string: invalid, coin: .ethereum))
     }
 
-    func testSigner() {
+    func testSigner() throws {
         let input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: "01")!
             $0.nonce = Data(hexString: "09")!
@@ -39,6 +37,7 @@ class EthereumTests: XCTestCase {
 
         let output: EthereumSigningOutput = AnySigner.sign(input: input, coin: .ethereum)
 
+        XCTAssertEqual(try input.serializedData().hexString, "0a0101120109220504a817c8002a025208422a3078333533353335333533353335333533353335333533353335333533353335333533353335333533354a204646464646464646464646464646464646464646464646464646464646464646520c0a0a0a080de0b6b3a7640000")
         XCTAssertEqual(output.encoded.hexString, "f86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83")
     }
 
@@ -157,6 +156,67 @@ class EthereumTests: XCTestCase {
         XCTAssertEqual(output.data.hexString, "f242432a000000000000000000000000718046867b5b1782379a14ea4fc0c9b724da94fc0000000000000000000000005322b34c88ed0691971bf52a7047448f0f4efc840000000000000000000000000000000000000000000000000000000023c47ee50000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000040102030400000000000000000000000000000000000000000000000000000000")
     }
 
+    func testSignStakeRocketPool() {
+        let function = EthereumAbiFunction(name: "deposit")
+
+        let input = EthereumSigningInput.with {
+            $0.chainID = Data(hexString: "01")!
+            $0.nonce = Data(hexString: "01")!
+            $0.txMode = .enveloped
+            $0.gasPrice = Data(hexString: "77541880")! // 2002000000
+            $0.gasLimit = Data(hexString: "0320c8")! // 205000
+            $0.maxFeePerGas = Data(hexString: "067ef83700")! // 27900000000
+            $0.maxInclusionFeePerGas = Data(hexString: "3b9aca00")! // 1000000000
+            $0.toAddress = "0x2cac916b2a963bf162f076c0a8a4a8200bcfbfb4" // contract
+            $0.privateKey = Data(hexString: "9f56448d33de406db1561aae15fce64bdf0e9706ff15c45d4409e8fcbfd1a498")!
+
+            $0.transaction = EthereumTransaction.with {
+                $0.transfer = EthereumTransaction.Transfer.with {
+                    $0.amount = Data(hexString: "2386f26fc10000")! // 0.01 ETH
+                    $0.data = Data(hexString: EthereumAbi.encode(fn: function).hexString)!
+                }
+            }
+        }
+        let output: EthereumSigningOutput = AnySigner.sign(input: input, coin: .ethereum)
+
+        // https://etherscan.io/tx/0xfeba0c579f3e964fbc4eafa500e86891b9f4113735b1364edd4433d765506f1e
+        XCTAssertEqual(output.r.hexString, "fb39e5079d7a0598ec45785d73a06b91fe1db707b9c6a150c87ffce2492c66d6")
+        XCTAssertEqual(output.v.hexString, "00")
+        XCTAssertEqual(output.s.hexString, "7fbd43a6f4733b2b4f98ad1bc4678ea2615f5edf56ad91408337adec2f07c0ac")
+        XCTAssertEqual(output.encoded.hexString, "02f8770101843b9aca0085067ef83700830320c8942cac916b2a963bf162f076c0a8a4a8200bcfbfb4872386f26fc1000084d0e30db0c080a0fb39e5079d7a0598ec45785d73a06b91fe1db707b9c6a150c87ffce2492c66d6a07fbd43a6f4733b2b4f98ad1bc4678ea2615f5edf56ad91408337adec2f07c0ac")
+    }
+
+    func testSignUnstakeRocketPool() {
+        let function = EthereumAbiFunction(name: "burn")
+        function.addParamUInt256(val: Data(hexString: "0x21faa32ab2502b")!, isOutput: false)
+
+        let input = EthereumSigningInput.with {
+            $0.chainID = Data(hexString: "01")!
+            $0.nonce = Data(hexString: "03")!
+            $0.txMode = .enveloped
+            $0.gasPrice = Data(hexString: "77541880")! // 2002000000
+            $0.gasLimit = Data(hexString: "055730")! // 350000
+            $0.maxFeePerGas = Data(hexString: "067ef83700")! // 27900000000
+            $0.maxInclusionFeePerGas = Data(hexString: "3b9aca00")! // 1000000000
+            $0.toAddress = "0xae78736Cd615f374D3085123A210448E74Fc6393" // contract
+            $0.privateKey = Data(hexString: "9f56448d33de406db1561aae15fce64bdf0e9706ff15c45d4409e8fcbfd1a498")!
+
+            $0.transaction = EthereumTransaction.with {
+                $0.contractGeneric = EthereumTransaction.ContractGeneric.with {
+                    $0.amount = Data(hexString: "00")!
+                    $0.data = Data(hexString: EthereumAbi.encode(fn: function).hexString)!
+                }
+            }
+        }
+        let output: EthereumSigningOutput = AnySigner.sign(input: input, coin: .ethereum)
+
+        // https://etherscan.io/tx/0x7fd3c0e9b8b309b4258baa7677c60f5e00e8db7b647fbe3a52adda25058a4b37
+        XCTAssertEqual(output.r.hexString, "1fc6e94908107584357799e952b4e3fb87f088aeb66d7930a7015643f19c9e7f")
+        XCTAssertEqual(output.v.hexString, "00")
+        XCTAssertEqual(output.s.hexString, "2c56a0b70ff2e52bf374a3dcd404bc42317d5ca15d319f5e33665352eb48f06f")
+        XCTAssertEqual(output.encoded.hexString, "02f8900103843b9aca0085067ef837008305573094ae78736cd615f374d3085123a210448e74fc639380a442966c680000000000000000000000000000000000000000000000000021faa32ab2502bc080a01fc6e94908107584357799e952b4e3fb87f088aeb66d7930a7015643f19c9e7fa02c56a0b70ff2e52bf374a3dcd404bc42317d5ca15d319f5e33665352eb48f06f")
+    }
+
     func testSignJSON() {
         let json = """
         {
@@ -211,5 +271,102 @@ class EthereumTests: XCTestCase {
 
         XCTAssertEqual(ethAddress, "0xa4531dE99E22B2166d340E7221669DF565c52024")
         XCTAssertEqual(btcAddress, "bc1q97jc0jdgsyvvhxydxxd6np8sa920c39l3qpscf")
+    }
+    
+    func testMessageAndVerifySignerImmutableX() {
+        let privateKey = PrivateKey(data: Data(hexString: "3b0a61f46fdae924007146eacb6db6642de7a5603ad843ec58e10331d89d4b84")!)!
+        let msg = "Only sign this request if you’ve initiated an action with Immutable X.\n\nFor internal use:\nbd717ba31dca6e0f3f136f7c4197babce5f09a9f25176044c0b3112b1b6017a3"
+        let signature = EthereumMessageSigner.signMessageImmutableX(privateKey: privateKey, message: msg)
+        XCTAssertEqual(signature, "32cd5a58f3419fc5db672e3d57f76199b853eda0856d491b38f557b629b0a0814ace689412bf354a1af81126d2749207dffae8ae8845160f33948a6b787e17ee01")
+        let pubKey = privateKey.getPublicKey(coinType: .ethereum)
+        XCTAssertTrue(EthereumMessageSigner.verifyMessage(pubKey: pubKey, message: msg, signature: signature))
+    }
+    
+    func testMessageAndVerifySignerLegacy() {
+        let privateKey = PrivateKey(data: Data(hexString: "03a9ca895dca1623c7dfd69693f7b4111f5d819d2e145536e0b03c136025a25d")!)!
+        let msg = "Foo"
+        let signature = EthereumMessageSigner.signMessage(privateKey: privateKey, message: msg)
+        XCTAssertEqual(signature, "21a779d499957e7fd39392d49a079679009e60e492d9654a148829be43d2490736ec72bc4a5644047d979c3cf4ebe2c1c514044cf436b063cb89fc6676be71101b")
+        let pubKey = privateKey.getPublicKey(coinType: .ethereum)
+        XCTAssertTrue(EthereumMessageSigner.verifyMessage(pubKey: pubKey, message: msg, signature: signature))
+    }
+    
+    func testMessageAndVerifySignerEip155() {
+        let privateKey = PrivateKey(data: Data(hexString: "03a9ca895dca1623c7dfd69693f7b4111f5d819d2e145536e0b03c136025a25d")!)!
+        let msg = "Foo"
+        let signature = EthereumMessageSigner.signMessageEip155(privateKey: privateKey, message: msg, chainId: 0)
+        XCTAssertEqual(signature, "21a779d499957e7fd39392d49a079679009e60e492d9654a148829be43d2490736ec72bc4a5644047d979c3cf4ebe2c1c514044cf436b063cb89fc6676be711023")
+        let pubKey = privateKey.getPublicKey(coinType: .ethereum)
+        XCTAssertTrue(EthereumMessageSigner.verifyMessage(pubKey: pubKey, message: msg, signature: signature))
+    }
+    
+    func testMessageAndVerifySigner712Legacy() {
+        let privateKey = PrivateKey(data: Data(hexString: "03a9ca895dca1623c7dfd69693f7b4111f5d819d2e145536e0b03c136025a25d")!)!
+        let msg = """
+         {
+                        "types": {
+                            "EIP712Domain": [
+                                {"name": "name", "type": "string"},
+                                {"name": "version", "type": "string"},
+                                {"name": "chainId", "type": "uint256"},
+                                {"name": "verifyingContract", "type": "address"}
+                            ],
+                            "Person": [
+                                {"name": "name", "type": "string"},
+                                {"name": "wallet", "type": "address"}
+                            ]
+                        },
+                        "primaryType": "Person",
+                        "domain": {
+                            "name": "Ether Person",
+                            "version": "1",
+                            "chainId": 0,
+                            "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+                        },
+                        "message": {
+                            "name": "Cow",
+                            "wallet": "CD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+                        }
+                    }
+        """
+        let signature = EthereumMessageSigner.signTypedMessage(privateKey: privateKey, messageJson: msg)
+        XCTAssertEqual(signature, "446434e4c34d6b7456e5f07a1b994b88bf85c057234c68d1e10c936b1c85706c4e19147c0ac3a983bc2d56ebfd7146f8b62bcea6114900fe8e7d7351f44bf3761c")
+        let pubKey = privateKey.getPublicKey(coinType: .ethereum)
+        XCTAssertTrue(EthereumMessageSigner.verifyMessage(pubKey: pubKey, message: msg, signature: signature))
+    }
+    
+    func testMessageAndVerifySigner712Eip155() {
+        let privateKey = PrivateKey(data: Data(hexString: "03a9ca895dca1623c7dfd69693f7b4111f5d819d2e145536e0b03c136025a25d")!)!
+        let msg = """
+         {
+                        "types": {
+                            "EIP712Domain": [
+                                {"name": "name", "type": "string"},
+                                {"name": "version", "type": "string"},
+                                {"name": "chainId", "type": "uint256"},
+                                {"name": "verifyingContract", "type": "address"}
+                            ],
+                            "Person": [
+                                {"name": "name", "type": "string"},
+                                {"name": "wallet", "type": "address"}
+                            ]
+                        },
+                        "primaryType": "Person",
+                        "domain": {
+                            "name": "Ether Person",
+                            "version": "1",
+                            "chainId": 0,
+                            "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+                        },
+                        "message": {
+                            "name": "Cow",
+                            "wallet": "CD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+                        }
+                    }
+        """
+        let signature = EthereumMessageSigner.signTypedMessageEip155(privateKey: privateKey, messageJson: msg, chainId: 0)
+        XCTAssertEqual(signature, "446434e4c34d6b7456e5f07a1b994b88bf85c057234c68d1e10c936b1c85706c4e19147c0ac3a983bc2d56ebfd7146f8b62bcea6114900fe8e7d7351f44bf37624")
+        let pubKey = privateKey.getPublicKey(coinType: .ethereum)
+        XCTAssertTrue(EthereumMessageSigner.verifyMessage(pubKey: pubKey, message: msg, signature: signature))
     }
 }

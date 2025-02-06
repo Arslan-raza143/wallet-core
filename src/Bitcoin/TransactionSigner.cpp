@@ -1,19 +1,21 @@
-// Copyright © 2017-2021 Trust Wallet.
+// SPDX-License-Identifier: Apache-2.0
 //
-// This file is part of Trust. The full Trust copyright notice, including
-// terms governing use, modification, and redistribution, is contained in the
-// file LICENSE at the root of the source code distribution tree.
+// Copyright © 2017 Trust Wallet.
 
 #include "TransactionSigner.h"
 
 #include "SignatureBuilder.h"
 
+#include "../BitcoinDiamond/Transaction.h"
+#include "../BitcoinDiamond/TransactionBuilder.h"
 #include "../Groestlcoin/Transaction.h"
+#include "../Verge/Transaction.h"
+#include "../Verge/TransactionBuilder.h"
 #include "../Zcash/Transaction.h"
 #include "../Zcash/TransactionBuilder.h"
+#include "../Zen/TransactionBuilder.h"
 
-using namespace TW;
-using namespace TW::Bitcoin;
+namespace TW::Bitcoin {
 
 template <typename Transaction, typename TransactionBuilder>
 TransactionPlan TransactionSigner<Transaction, TransactionBuilder>::plan(const SigningInput& input) {
@@ -28,29 +30,45 @@ Result<Transaction, Common::Proto::SigningError> TransactionSigner<Transaction, 
     } else {
         plan = TransactionBuilder::plan(input);
     }
-    auto transaction = TransactionBuilder::template build<Transaction>(plan, input.toAddress, input.changeAddress, input.coinType, input.lockTime);
+    auto tx_result = TransactionBuilder::template build<Transaction>(plan, input);
+    if (!tx_result) {
+        return Result<Transaction, Common::Proto::SigningError>::failure(tx_result.error());
+    }
+    Transaction transaction = tx_result.payload();
     SigningMode signingMode =
-        estimationMode ? SigningMode_SizeEstimationOnly :
-        optionalExternalSigs.has_value() ? SigningMode_External : SigningMode_Normal;
+        estimationMode ? SigningMode_SizeEstimationOnly : optionalExternalSigs.has_value() ? SigningMode_External
+                                                                                           : SigningMode_Normal;
     SignatureBuilder<Transaction> signer(std::move(input), plan, transaction, signingMode, optionalExternalSigs);
     return signer.sign();
 }
 
 template <typename Transaction, typename TransactionBuilder>
-HashPubkeyList TransactionSigner<Transaction, TransactionBuilder>::preImageHashes(const SigningInput& input) {
+Result<HashPubkeyList, Common::Proto::SigningError> TransactionSigner<Transaction, TransactionBuilder>::preImageHashes(const SigningInput& input) {
     TransactionPlan plan;
     if (input.plan.has_value()) {
         plan = input.plan.value();
     } else {
         plan = TransactionBuilder::plan(input);
     }
-    auto transaction = TransactionBuilder::template build<Transaction>(plan, input.toAddress, input.changeAddress, input.coinType, input.lockTime);
+    auto tx_result = TransactionBuilder::template build<Transaction>(plan, input);
+    if (!tx_result) {
+        return Result<HashPubkeyList, Common::Proto::SigningError>::failure(tx_result.error());
+    }
+    Transaction transaction = tx_result.payload();
     SignatureBuilder<Transaction> signer(std::move(input), plan, transaction, SigningMode_HashOnly);
-    signer.sign();
-    return signer.getHashesForSigning();
+    auto signResult = signer.sign();
+    if (!signResult) {
+        return Result<HashPubkeyList, Common::Proto::SigningError>::failure(signResult.error());
+    }
+    return Result<HashPubkeyList, Common::Proto::SigningError>::success(signer.getHashesForSigning());
 }
 
 // Explicitly instantiate a Signers for compatible transactions.
 template class Bitcoin::TransactionSigner<Bitcoin::Transaction, TransactionBuilder>;
 template class Bitcoin::TransactionSigner<Zcash::Transaction, Zcash::TransactionBuilder>;
+template class Bitcoin::TransactionSigner<Bitcoin::Transaction, Zen::TransactionBuilder>;
 template class Bitcoin::TransactionSigner<Groestlcoin::Transaction, TransactionBuilder>;
+template class Bitcoin::TransactionSigner<Verge::Transaction, Verge::TransactionBuilder>;
+template class Bitcoin::TransactionSigner<BitcoinDiamond::Transaction, BitcoinDiamond::TransactionBuilder>;
+
+} // namespace TW::Bitcoin
